@@ -1,5 +1,7 @@
 import requests
 import configparser
+from tldextract import extract  # Library for proper domain and TLD extraction
+
 
 class SpaceshipClient:
     """Client to interact with the Spaceship DNS API."""
@@ -23,13 +25,21 @@ class SpaceshipClient:
             "X-Api-Secret": self.api_secret,
         }
 
+    def _get_main_domain(self, domain: str) -> str:
+        """
+        Extract the main domain (e.g., `acechange.io`) from a full domain name.
+        Uses tldextract for accurate extraction of the domain and TLD.
+        """
+        extracted = extract(domain)
+        if not extracted.domain or not extracted.suffix:
+            raise ValueError(f"Unable to extract main domain from: {domain}")
+        return f"{extracted.domain}.{extracted.suffix}"
+
     def _get_domain_info(self, domain: str) -> dict:
         """
         Retrieve information about the main domain (e.g., `acechange.io`).
-        Strips subdomains (if any) and directly queries the main domain.
         """
-        # Extract the main domain
-        main_domain = domain.split('.', 1)[-1]  # Always use the base domain (e.g., `acechange.io`)
+        main_domain = self._get_main_domain(domain)  # Always use the base domain
         url = f"{self.base_url}/domains/{main_domain}"
 
         try:
