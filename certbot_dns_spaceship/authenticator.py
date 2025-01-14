@@ -1,4 +1,3 @@
-
 import logging
 from typing import Any, Callable, Optional
 
@@ -35,4 +34,3 @@ class SpaceshipDNSAuthenticator(DNSAuthenticator):
     def _get_spaceship_client(self) -> "SpaceshipClient":
         from .client import SpaceshipClient
         return SpaceshipClient(self.credentials)
-        
