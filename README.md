@@ -1,4 +1,3 @@
-
 # Certbot DNS Spaceship Plugin
 
 This plugin integrates Certbot with the Spaceship DNS API to automate the DNS-01 challenge required for obtaining SSL/TLS certificates, including wildcard certificates.
@@ -20,16 +19,11 @@ This plugin simplifies the process of obtaining and renewing SSL/TLS certificate
 
 ## Installation
 
-1. Clone the repository or download the package:
-   ```bash
-   git clone https://github.com/version-two/certbot_dns_spaceship.git
-   cd certbot-dns-spaceship
-   ```
+Install the plugin directly from PyPI:
 
-2. Install the plugin using pip:
-   ```bash
-   pip install .
-   ```
+```bash
+pip install certbot-dns-spaceship
+```
 
 ## Configuration
 
@@ -91,4 +85,4 @@ For more details about the Spaceship API, refer to the [Spaceship API Documentat
 This plugin is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
 
 ## Support
-For issues related to this plugin, create an issue in the [GitHub repository](https://github.com/your-username/certbot-dns-spaceship). For Spaceship account or API issues, contact [Spaceship Support](https://spaceship.com/support).
+For issues related to this plugin, create an issue in the [GitHub repository](https://github.com/version-two/certbot_dns_spaceship). For Spaceship account or API issues, contact [Spaceship Support](https://spaceship.com/support).
