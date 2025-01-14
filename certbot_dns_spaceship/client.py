@@ -25,40 +25,21 @@ class SpaceshipClient:
 
     def _get_domain_info(self, domain: str) -> dict:
         """
-        Retrieve information about the specified domain.
-        Tries the full domain first (e.g., `in.acechange.io`) and falls back to the main domain (e.g., `acechange.io`).
+        Retrieve information about the main domain (e.g., `acechange.io`).
+        Strips subdomains (if any) and directly queries the main domain.
         """
-        # Define the list of domains to try
-        tried_domains = [domain, domain.split('.', 1)[-1]]  # Try `in.acechange.io`, then `acechange.io`
-        errors = []  # Collect errors for all attempts
+        # Extract the main domain
+        main_domain = domain.split('.', 1)[-1]  # Always use the base domain (e.g., `acechange.io`)
+        url = f"{self.base_url}/domains/{main_domain}"
 
-        for domain_try in tried_domains:
-            url = f"{self.base_url}/domains/{domain_try}"
-            try:
-                # Attempt to fetch domain information
-                response = requests.get(url, headers=self._get_headers())
-                if response.status_code == 200:
-                    # Successfully found the domain
-                    return response.json()
-                elif response.status_code == 404:
-                    # Log the error and continue to the next domain
-                    errors.append(f"Domain not found: {domain_try}")
-                    continue
-                else:
-                    # Handle unexpected responses
-                    errors.append(f"Unexpected response for {domain_try}: {response.status_code} - {response.text}")
-                    continue
-            except requests.exceptions.RequestException as e:
-                # Handle network-related errors
-                errors.append(f"Request error for {domain_try}: {str(e)}")
-                continue
-
-        # If all attempts fail, raise a descriptive error
-        error_message = (
-            f"Unable to find domain information. Tried the following domains: {', '.join(tried_domains)}. "
-            f"Errors encountered: {', '.join(errors)}"
-        )
-        raise ValueError(error_message)
+        try:
+            # Attempt to fetch domain information
+            response = requests.get(url, headers=self._get_headers())
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            # Raise a descriptive error if the request fails
+            raise ValueError(f"Error retrieving domain information for {main_domain}: {str(e)}")
 
     def add_txt_record(self, domain: str, name: str, content: str) -> None:
         """Create a TXT record for DNS-01 challenge."""
