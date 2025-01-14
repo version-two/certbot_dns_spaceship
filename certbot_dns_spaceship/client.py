@@ -28,26 +28,34 @@ class SpaceshipClient:
         Retrieve information about the specified domain.
         Tries the full domain first (e.g., `in.acechange.io`) and falls back to the main domain (e.g., `acechange.io`).
         """
-        tried_domains = [domain, domain.split('.', 1)[-1]]  # Try `in.acechange.io` first, then `acechange.io`
+        tried_domains = [domain, domain.split('.', 1)[-1]]  # Try `in.acechange.io`, then `acechange.io`
+        last_error = None  # Store the last error for detailed reporting
 
         for domain_try in tried_domains:
             url = f"{self.base_url}/domains/{domain_try}"
             try:
-                # Make a GET request to retrieve domain info
+                # Attempt to fetch domain information
                 response = requests.get(url, headers=self._get_headers())
                 if response.status_code == 200:
-                    return response.json()
+                    return response.json()  # Successfully found domain
                 elif response.status_code == 404:
-                    # If the domain is not found, try the fallback
+                    # If domain is not found, log and continue to the next one
+                    last_error = f"Domain not found: {domain_try}"
                     continue
                 else:
-                    # Raise an HTTP error for unexpected responses
+                    # Raise for any unexpected response code
                     response.raise_for_status()
             except requests.exceptions.RequestException as e:
-                raise RuntimeError(f"Error retrieving domain info for {domain_try}: {e}")
+                # Log the error and continue trying the next domain
+                last_error = f"Error while trying domain {domain_try}: {str(e)}"
+                continue
 
-        # Raise an error if neither the full domain nor its fallback was found
-        raise ValueError(f"Neither {domain} nor its parent domain found in Spaceship account.")
+        # If no domains were found, raise an error with detailed information
+        error_message = (
+            f"Unable to find domain information. Tried the following domains: {', '.join(tried_domains)}. "
+            f"Last error: {last_error}"
+        )
+        raise ValueError(error_message)
 
     def add_txt_record(self, domain: str, name: str, content: str) -> None:
         """Create a TXT record for DNS-01 challenge."""
