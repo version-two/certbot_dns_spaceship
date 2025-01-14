@@ -28,6 +28,7 @@ class SpaceshipClient:
         Retrieve information about the specified domain.
         Tries the full domain first (e.g., `in.acechange.io`) and falls back to the main domain (e.g., `acechange.io`).
         """
+        # Define the list of domains to try
         tried_domains = [domain, domain.split('.', 1)[-1]]  # Try `in.acechange.io`, then `acechange.io`
         errors = []  # Collect errors for all attempts
 
@@ -37,16 +38,22 @@ class SpaceshipClient:
                 # Attempt to fetch domain information
                 response = requests.get(url, headers=self._get_headers())
                 if response.status_code == 200:
-                    return response.json()  # Successfully found domain
+                    # Successfully found the domain
+                    return response.json()
                 elif response.status_code == 404:
+                    # Log the error and continue to the next domain
                     errors.append(f"Domain not found: {domain_try}")
+                    continue
                 else:
+                    # Handle unexpected responses
                     errors.append(f"Unexpected response for {domain_try}: {response.status_code} - {response.text}")
+                    continue
             except requests.exceptions.RequestException as e:
-                # Catch network or request-related errors
+                # Handle network-related errors
                 errors.append(f"Request error for {domain_try}: {str(e)}")
+                continue
 
-        # Raise a descriptive error if no domains were found
+        # If all attempts fail, raise a descriptive error
         error_message = (
             f"Unable to find domain information. Tried the following domains: {', '.join(tried_domains)}. "
             f"Errors encountered: {', '.join(errors)}"
