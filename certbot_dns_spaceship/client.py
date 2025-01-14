@@ -29,28 +29,44 @@ class SpaceshipClient:
             raise ValueError(f"Unable to extract main domain from: {domain}")
         return f"{extracted.domain}.{extracted.suffix}"
 
-    def add_txt_record(self, domain: str, name: str, content: str, ttl: int = 300) -> None:
+    def add_txt_record(self, domain: str, name: str, content: str) -> None:
+        """Create a TXT record for DNS-01 challenge."""
         main_domain = self._get_main_domain(domain)
         url = f"{self.base_url}/dns/records/{main_domain}"
         payload = {
             "force": True,
             "items": [
-                {"type": "TXT", "name": name, "content": content, "ttl": ttl}
+                {
+                    "type": "TXT",
+                    "name": name,
+                    "value": content  # Ensure this field is included
+                }
             ]
         }
 
-        response = requests.put(url, headers=self._get_headers(), json=payload)
-        if response.status_code != 204:
+        try:
+            response = requests.put(url, headers=self._get_headers(), json=payload)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
             raise RuntimeError(f"Failed to add TXT record: {response.json()}")
 
-    def remove_txt_record(self, domain: str, name: str) -> None:
+    def remove_txt_record(self, domain: str, name: str, content: str) -> None:
+        """Delete a TXT record for DNS-01 challenge."""
         main_domain = self._get_main_domain(domain)
         url = f"{self.base_url}/dns/records/{main_domain}"
-        payload = [{"type": "TXT", "name": name}]
+        payload = [
+            {
+                "type": "TXT",
+                "name": name,
+                "value": content  # Ensure the correct field name
+            }
+        ]
 
-        response = requests.delete(url, headers=self._get_headers(), json=payload)
-        if response.status_code != 204:
-            raise RuntimeError(f"Failed to remove TXT record: {response.json()}")
+        try:
+            response = requests.delete(url, headers=self._get_headers(), json=payload)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Error removing TXT record for {domain}: {e}")
 
     def list_records(self, domain: str, take: int = 100, skip: int = 0) -> dict:
         main_domain = self._get_main_domain(domain)
