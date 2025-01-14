@@ -29,7 +29,7 @@ class SpaceshipClient:
         Tries the full domain first (e.g., `in.acechange.io`) and falls back to the main domain (e.g., `acechange.io`).
         """
         tried_domains = [domain, domain.split('.', 1)[-1]]  # Try `in.acechange.io`, then `acechange.io`
-        last_error = None  # Store the last error for detailed reporting
+        errors = []  # Collect errors for all attempts
 
         for domain_try in tried_domains:
             url = f"{self.base_url}/domains/{domain_try}"
@@ -39,21 +39,17 @@ class SpaceshipClient:
                 if response.status_code == 200:
                     return response.json()  # Successfully found domain
                 elif response.status_code == 404:
-                    # If domain is not found, log and continue to the next one
-                    last_error = f"Domain not found: {domain_try}"
-                    continue
+                    errors.append(f"Domain not found: {domain_try}")
                 else:
-                    # Raise for any unexpected response code
-                    response.raise_for_status()
+                    errors.append(f"Unexpected response for {domain_try}: {response.status_code} - {response.text}")
             except requests.exceptions.RequestException as e:
-                # Log the error and continue trying the next domain
-                last_error = f"Error while trying domain {domain_try}: {str(e)}"
-                continue
+                # Catch network or request-related errors
+                errors.append(f"Request error for {domain_try}: {str(e)}")
 
-        # If no domains were found, raise an error with detailed information
+        # Raise a descriptive error if no domains were found
         error_message = (
             f"Unable to find domain information. Tried the following domains: {', '.join(tried_domains)}. "
-            f"Last error: {last_error}"
+            f"Errors encountered: {', '.join(errors)}"
         )
         raise ValueError(error_message)
 
