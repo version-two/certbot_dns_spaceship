@@ -3,6 +3,7 @@ from typing import Any, Callable, Optional
 
 import requests
 from certbot.plugins.dns_common import DNSAuthenticator
+from .client import SpaceshipClient
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +17,8 @@ class SpaceshipDNSAuthenticator(DNSAuthenticator):
         self.credentials: Optional[str] = None
 
     @classmethod
-    def add_parser_arguments(cls, add: Callable[..., None]) -> None:
-        super().add_parser_arguments(add)
+    def add_parser_arguments(cls, add: Callable[..., None], *args: Any, **kwargs: Any) -> None:
+        super().add_parser_arguments(add, *args, **kwargs)
         add("credentials", help="Path to Spaceship API credentials INI file")
 
     def _setup_credentials(self) -> None:
