@@ -2,7 +2,6 @@ import requests
 import configparser
 from tldextract import extract  # Library for proper domain and TLD extraction
 
-
 class SpaceshipClient:
     """Client to interact with the Spaceship DNS API."""
 
@@ -27,7 +26,7 @@ class SpaceshipClient:
 
     def _get_main_domain(self, domain: str) -> str:
         """
-        Extract the main domain (e.g., `example.com`) from a full domain name.
+        Extract the main domain (e.g., `acechange.io`) from a full domain name.
         Uses tldextract for accurate extraction of the domain and TLD.
         """
         extracted = extract(domain)
@@ -35,30 +34,10 @@ class SpaceshipClient:
             raise ValueError(f"Unable to extract main domain from: {domain}")
         return f"{extracted.domain}.{extracted.suffix}"
 
-    def _get_domain_info(self, domain: str) -> dict:
-        """
-        Retrieve information about the main domain (e.g., `example.com`).
-        """
-        main_domain = self._get_main_domain(domain)  # Always use the base domain
-        url = f"{self.base_url}/domains/{main_domain}"
-
-        try:
-            # Attempt to fetch domain information
-            response = requests.get(url, headers=self._get_headers())
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            # Raise a descriptive error if the request fails
-            raise ValueError(f"Error retrieving domain information for {main_domain}: {str(e)}")
-
     def add_txt_record(self, domain: str, name: str, content: str) -> None:
         """Create a TXT record for DNS-01 challenge."""
-        domain_info = self._get_domain_info(domain)
-        domain_name = domain_info.get("name")  # Use "name" as the domain identifier
-        if not domain_name:
-            raise ValueError(f"Domain name for {domain} not found in the API response.")
-
-        url = f"{self.base_url}/domains/{domain_name}/dns-records"
+        main_domain = self._get_main_domain(domain)
+        url = f"{self.base_url}/dns/records/{main_domain}"
         payload = {
             "type": "TXT",
             "name": name,
@@ -74,13 +53,8 @@ class SpaceshipClient:
 
     def remove_txt_record(self, domain: str, name: str, content: str) -> None:
         """Delete a TXT record for DNS-01 challenge."""
-        domain_info = self._get_domain_info(domain)
-        domain_name = domain_info.get("name")  # Use "name" as the domain identifier
-        if not domain_name:
-            raise ValueError(f"Domain name for {domain} not found in the API response.")
-
-        # Fetch existing DNS records to find the record ID
-        url = f"{self.base_url}/domains/{domain_name}/dns-records"
+        main_domain = self._get_main_domain(domain)
+        url = f"{self.base_url}/dns/records/{main_domain}"
         try:
             response = requests.get(url, headers=self._get_headers())
             response.raise_for_status()
@@ -91,7 +65,11 @@ class SpaceshipClient:
         # Find the record ID matching the name and content
         record_id = None
         for record in records:
-            if record["type"] == "TXT" and record["name"] == name and record["content"] == content:
+            if (
+                record["type"] == "TXT"
+                and record["name"] == name
+                and record["content"] == content
+            ):
                 record_id = record["id"]
                 break
 
