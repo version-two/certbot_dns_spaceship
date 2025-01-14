@@ -23,11 +23,20 @@ class SpaceshipClient:
         }
 
     def _get_domain_info(self, domain: str) -> dict:
-        """Retrieve information about the specified domain."""
-        url = f"{self.base_url}/domains/{domain}"
-        response = requests.get(url, headers=self._get_headers())
-        response.raise_for_status()
-        return response.json()
+        """
+        Retrieve information about the specified domain.
+        Tries the full domain first (e.g., `in.acechange.io`) and falls back to the main domain (e.g., `acechange.io`).
+        """
+        for domain_try in [domain, domain.split('.', 1)[-1]]:  # Try `in.acechange.io` then `acechange.io`
+            url = f"{self.base_url}/domains/{domain_try}"
+            response = requests.get(url, headers=self._get_headers())
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 404:
+                continue  # Try the fallback
+            response.raise_for_status()
+
+        raise ValueError(f"Neither {domain} nor its parent domain found in Spaceship account.")
 
     def add_txt_record(self, domain: str, name: str, content: str) -> None:
         """Create a TXT record for DNS-01 challenge."""
