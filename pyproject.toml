@@ -43,5 +43,5 @@ dev = [
 dns-spaceship = "certbot_dns_spaceship.authenticator:SpaceshipDNSAuthenticator"
 
 [tool.setuptools.packages.find]
-where = ["certbot_dns_spaceship"]
+where = ["src"]
 include = ["certbot_dns_spaceship*"]
