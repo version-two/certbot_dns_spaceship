@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "certbot-dns-spaceship"
+version = "1.0.0"
+description = "Spaceship DNS Authenticator plugin for Certbot"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Mario Chamuty", email = "info@versiontwo.sk"}
+]
+keywords = ["certbot", "dns", "spaceship", "authentication"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Security :: Cryptography"
+]
+dependencies = [
+    "certbot>=1.0.0",
+    "requests",
+    "tldextract"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "twine",
+    "flake8"
+]
+
+[project.entry-points."certbot.plugins"]
+dns-spaceship = "certbot_dns_spaceship.authenticator:SpaceshipDNSAuthenticator"
+
+[tool.setuptools.packages.find]
+where = ["certbot_dns_spaceship"]
+include = ["certbot_dns_spaceship*"]
