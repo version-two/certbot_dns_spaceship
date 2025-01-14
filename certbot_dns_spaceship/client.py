@@ -2,6 +2,7 @@ import requests
 import configparser
 from tldextract import extract
 
+
 class SpaceshipClient:
     """Client to interact with the Spaceship DNS API."""
 
@@ -32,14 +33,15 @@ class SpaceshipClient:
     def add_txt_record(self, domain: str, name: str, content: str) -> None:
         """Create a TXT record for DNS-01 challenge."""
         main_domain = self._get_main_domain(domain)
+        relative_name = name.replace(f".{main_domain}", "")
         url = f"{self.base_url}/dns/records/{main_domain}"
         payload = {
             "force": True,
             "items": [
                 {
                     "type": "TXT",
-                    "name": name,
-                    "value": content  # Ensure this field is included
+                    "name": relative_name,
+                    "value": content
                 }
             ]
         }
@@ -53,12 +55,13 @@ class SpaceshipClient:
     def remove_txt_record(self, domain: str, name: str, content: str) -> None:
         """Delete a TXT record for DNS-01 challenge."""
         main_domain = self._get_main_domain(domain)
+        relative_name = name.replace(f".{main_domain}", "")
         url = f"{self.base_url}/dns/records/{main_domain}"
         payload = [
             {
                 "type": "TXT",
-                "name": name,
-                "value": content  # Ensure the correct field name
+                "name": relative_name,
+                "value": content
             }
         ]
 
