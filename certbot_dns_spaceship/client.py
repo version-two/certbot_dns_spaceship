@@ -27,7 +27,7 @@ class SpaceshipClient:
 
     def _get_main_domain(self, domain: str) -> str:
         """
-        Extract the main domain (e.g., `acechange.io`) from a full domain name.
+        Extract the main domain (e.g., `example.com`) from a full domain name.
         Uses tldextract for accurate extraction of the domain and TLD.
         """
         extracted = extract(domain)
@@ -37,7 +37,7 @@ class SpaceshipClient:
 
     def _get_domain_info(self, domain: str) -> dict:
         """
-        Retrieve information about the main domain (e.g., `acechange.io`).
+        Retrieve information about the main domain (e.g., `example.com`).
         """
         main_domain = self._get_main_domain(domain)  # Always use the base domain
         url = f"{self.base_url}/domains/{main_domain}"
@@ -54,11 +54,11 @@ class SpaceshipClient:
     def add_txt_record(self, domain: str, name: str, content: str) -> None:
         """Create a TXT record for DNS-01 challenge."""
         domain_info = self._get_domain_info(domain)
-        domain_id = domain_info.get("id")
-        if not domain_id:
-            raise ValueError(f"Domain ID for {domain} not found.")
+        domain_name = domain_info.get("name")  # Use "name" as the domain identifier
+        if not domain_name:
+            raise ValueError(f"Domain name for {domain} not found in the API response.")
 
-        url = f"{self.base_url}/domains/{domain_id}/dns-records"
+        url = f"{self.base_url}/domains/{domain_name}/dns-records"
         payload = {
             "type": "TXT",
             "name": name,
@@ -75,12 +75,12 @@ class SpaceshipClient:
     def remove_txt_record(self, domain: str, name: str, content: str) -> None:
         """Delete a TXT record for DNS-01 challenge."""
         domain_info = self._get_domain_info(domain)
-        domain_id = domain_info.get("id")
-        if not domain_id:
-            raise ValueError(f"Domain ID for {domain} not found.")
+        domain_name = domain_info.get("name")  # Use "name" as the domain identifier
+        if not domain_name:
+            raise ValueError(f"Domain name for {domain} not found in the API response.")
 
         # Fetch existing DNS records to find the record ID
-        url = f"{self.base_url}/domains/{domain_id}/dns-records"
+        url = f"{self.base_url}/domains/{domain_name}/dns-records"
         try:
             response = requests.get(url, headers=self._get_headers())
             response.raise_for_status()
