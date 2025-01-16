@@ -59,7 +59,7 @@ certbot renew
 - Ensure your API key has permissions to manage DNS records.
 
 ## Spaceship API Documentation
-For more details about the Spaceship API, refer to the [Spaceship API Documentation](https://docs.spaceship.com).
+For more details about the Spaceship API, refer to the [Spaceship API Documentation](https://docs.spaceship.dev).
 
 ## Development
 
